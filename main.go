@@ -1,28 +1,43 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/almuiz021/gatorcli/internal/config"
 )
 
+type state struct {
+	cfg *config.Config
+}
+
 func main() {
-	dbConfig, err := config.Read()
+	cfg, err := config.Read()
 	if err != nil {
 		log.Fatalf("error reading config: %v", err)
 	}
-	fmt.Printf("Read config: %+v\n", dbConfig)
 
-	err = dbConfig.SetUser("abdulmuiz")
-	if err != nil {
-		log.Fatalf("couldn't set current user: %v", err)
+	programState := &state{
+		cfg: &cfg,
 	}
 
-	dbConfig, err = config.Read()
-	if err != nil {
-		log.Fatalf("error reading config: %v", err)
+	cmds := &commands{
+		handlers: make(map[string]func(*state, command) error),
 	}
-	fmt.Printf("Read config again: %+v\n", dbConfig)
 
+	cmds.register("login", handlerLogin)
+
+	cmdLineArgs := os.Args
+	if len(cmdLineArgs) < 2 {
+		log.Fatal("Usage: cli <command> [args...]")
+	}
+
+	cmdName := strings.ToLower(cmdLineArgs[1])
+	cmdArgs := cmdLineArgs[2:]
+
+	err = cmds.run(programState, command{Name: cmdName, Args: cmdArgs})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
