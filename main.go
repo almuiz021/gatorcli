@@ -1,14 +1,20 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
+	_ "github.com/lib/pq"
+
 	"github.com/almuiz021/gatorcli/internal/config"
+	"github.com/almuiz021/gatorcli/internal/database"
 )
 
 type state struct {
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -18,8 +24,17 @@ func main() {
 		log.Fatalf("error reading config: %v", err)
 	}
 
+	db, err := sql.Open("postgres", cfg.DbURL)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer db.Close()
+
+	dbQueries := database.New(db)
+
 	programState := &state{
 		cfg: &cfg,
+		db:  dbQueries,
 	}
 
 	cmds := &commands{
@@ -27,6 +42,7 @@ func main() {
 	}
 
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	cmdLineArgs := os.Args
 	if len(cmdLineArgs) < 2 {
