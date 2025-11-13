@@ -70,12 +70,25 @@ func handlerRegister(s *state, cmd command) error {
 
 	return fmt.Errorf("user %s already exists", fetchedUser.Name)
 }
-
-func handlerReset(s *state, cmd command) error {
-
+func handlerAllUsers(s *state, cmd command) error {
 	ctx := context.Background()
-	if err := s.db.DeleteAllUsers(ctx); err != nil {
-		return fmt.Errorf("error deleting all users: %w", err)
+
+	fetchedAllUsers, err := s.db.GetAllUsers(ctx)
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("no data to get: %w", err)
 	}
+	if err != nil {
+		return fmt.Errorf("error while fetching all users: %w", err)
+	}
+
+	currentUser := s.cfg.CurrentUserName
+	for _, user := range fetchedAllUsers {
+		if user.Name == currentUser {
+			fmt.Printf("* %s (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %s\n", user.Name)
+		}
+	}
+
 	return nil
 }
