@@ -54,6 +54,8 @@ func main() {
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerAllUsers)
 	cmds.register("agg", handlerGetRequests)
+	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("feeds", handlerFeeds)
 
 	cmdLineArgs := os.Args
 	if len(cmdLineArgs) < 2 {
