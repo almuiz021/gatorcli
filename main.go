@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -14,8 +16,10 @@ import (
 )
 
 type state struct {
-	db  *database.Queries
-	cfg *config.Config
+	db         *database.Queries
+	cfg        *config.Config
+	httpClient http.Client
+	baseUrl    string
 }
 
 func main() {
@@ -35,6 +39,10 @@ func main() {
 	programState := &state{
 		cfg: &cfg,
 		db:  dbQueries,
+		httpClient: http.Client{
+			Timeout: 10 * time.Second,
+		},
+		baseUrl: "https://www.wagslane.dev/index.xml",
 	}
 
 	cmds := &commands{
@@ -45,6 +53,7 @@ func main() {
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerAllUsers)
+	cmds.register("agg", handlerGetRequests)
 
 	cmdLineArgs := os.Args
 	if len(cmdLineArgs) < 2 {
