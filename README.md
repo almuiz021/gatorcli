@@ -1,1 +1,1 @@
-# gatorcli
+# gator

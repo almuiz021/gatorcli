@@ -19,7 +19,6 @@ type state struct {
 	db         *database.Queries
 	cfg        *config.Config
 	httpClient http.Client
-	baseUrl    string
 }
 
 func main() {
@@ -42,7 +41,6 @@ func main() {
 		httpClient: http.Client{
 			Timeout: 10 * time.Second,
 		},
-		baseUrl: "https://www.wagslane.dev/index.xml",
 	}
 
 	cmds := &commands{
@@ -59,6 +57,7 @@ func main() {
 	cmds.register("follow", middlewareLoggedIn(handlerFeedsFollow))
 	cmds.register("unfollow", middlewareLoggedIn(handlerFeedsUnFollow))
 	cmds.register("following", middlewareLoggedIn(handlerFeedsFollowing))
+	cmds.register("browse", middlewareLoggedIn(handlerBrowse))
 
 	cmdLineArgs := os.Args
 	if len(cmdLineArgs) < 2 {
